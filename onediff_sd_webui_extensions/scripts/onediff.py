@@ -196,6 +196,7 @@ class Script(scripts.Script):
         ):
             compile_options = {}
 
+            del compiled_unet
             self.torch_gc()
 
             compiled_unet = compile_unet(
