@@ -174,6 +174,12 @@ class Script(scripts.Script):
             )
         return recompile
 
+    def torch_gc(self):
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
+
     def run(self, p, quantization=False):
         global compiled_unet, compiled_ckpt_name
         current_checkpoint = shared.opts.sd_model_checkpoint
@@ -190,12 +196,16 @@ class Script(scripts.Script):
         ):
             compile_options = {}
 
+            self.torch_gc()
+
             compiled_unet = compile_unet(
                 original_diffusion_model,
                 quantization=quantization,
                 options=compile_options,
             )
             compiled_ckpt_name = ckpt_name
+            
+            self.torch_gc()
         else:
             logger.info(
                 f"Model {current_checkpoint} has same sd type of graph type {self.current_type}, skip compile"
